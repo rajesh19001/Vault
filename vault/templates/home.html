@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Vault - High Performance</title>
+</head>
+<body style="background-color: #121212; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 50px;">
+    
+    <h1 style="color: #1DB954;">🔒 Personal Media Vault</h1>
+    
+    <form method="GET" action="" style="margin-bottom: 50px;">
+        <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Enter code..." 
+               style="padding: 15px; width: 300px; border-radius: 25px; border: none; background: #282828; color: white;">
+        <button type="submit" style="padding: 15px 25px; background: #1DB954; color: white; border: none; border-radius: 25px; cursor: pointer;">Unlock</button>
+    </form>
+
+    {% if results %}
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+            {% for item in results %}
+                <div style="background-color: #181818; padding: 20px; border-radius: 15px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    <h3 style="color: #b3b3b3;">{{ item.title }}</h3>
+                    
+                    {% if item.image_file %}
+                        <img src="{{ item.image_file.url }}" style="width: 100%; border-radius: 10px; margin-bottom: 15px;">
+                    {% endif %}
+
+                    {% if ".mp3" in item.video_file.url|lower or ".wav" in item.video_file.url|lower %}
+                        <div style="padding: 10px; background: #282828; border-radius: 10px;">
+                            <p style="color: #1DB954; font-weight: bold;">🎵 Audio Track</p>
+                            <audio id="audio_{{ forloop.counter }}" controls preload="auto" style="width: 100%;">
+                                <source src="{{ item.video_file.url }}" type="audio/mpeg">
+                            </audio>
+                        </div>
+                    {% else %}
+                        <video id="video_{{ forloop.counter }}" width="100%" controls preload="auto" style="border-radius: 10px; background: black;">
+                            <source src="{{ item.video_file.url }}" type="video/mp4">
+                        </video>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+        // This JavaScript ensures that when you click a timestamp, 
+        // the browser doesn't "hang" waiting for a full download.
+        document.querySelectorAll('audio, video').forEach(media => {
+            media.addEventListener('seeking', function() {
+                console.log("Jumping to: " + this.currentTime);
+            });
+            
+            // Forces the browser to keep the connection open for jumps
+            media.onloadedmetadata = function() {
+                media.setAttribute('preload', 'auto');
+            };
+        });
+    </script>
+</body>
+</html>
